@@ -1,19 +1,76 @@
+// app.js
 const express = require('express');
 const dotenv = require('dotenv');
-const orderRoutes = require('./routes/orderroute');
-const { notFound, errorHandler } = require('./middleware/errormiddleware');
+const mongoose = require('mongoose');
+const colors = require('colors'); // optional, for console logging
+const path = require('path');
 
+// Load environment variables
 dotenv.config();
+
 const app = express();
 
-app.use(express.json());
+// Middleware
+app.use(express.json()); // parse JSON requests
 
-// Routes
+// Connect to MongoDB
+const connectDB = async () => {
+  try {
+    const conn = await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log(`MongoDB Connected: ${conn.connection.host}`.cyan.underline);
+  } catch (error) {
+    console.error(`Error: ${error.message}`.red.bold);
+    process.exit(1);
+  }
+};
+connectDB();
+
+// Import routes
+const orderRoutes = require('./routes/orderroute');
+const userRoutes = require('./routes/userroute');
+const productRoutes = require('./routes/productroute');
+
+// Mount routes
 app.use('/api/orders', orderRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/products', productRoutes);
 
-// Error handling
-app.use(notFound);
-app.use(errorHandler);
+// Root route
+app.get('/', (req, res) => {
+  res.json({
+    message: 'API is running',
+    routes: [
+      { method: 'POST', path: '/api/orders' },
+      { method: 'GET', path: '/api/orders/myorders' },
+      { method: 'PUT', path: '/api/orders/:id/status' },
+      { method: 'GET', path: '/api/products' },
+      { method: 'POST', path: '/api/users/login' },
+      { method: 'POST', path: '/api/users/register' },
+    ],
+  });
+});
 
+// 404 handler
+app.use((req, res, next) => {
+  res.status(404).json({ message: `Not Found - ${req.originalUrl}` });
+});
+
+// Error handler
+app.use((err, req, res, next) => {
+  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  res.status(statusCode).json({
+    message: err.message,
+    stack: process.env.NODE_ENV === 'production' ? null : err.stack,
+  });
+});
+
+// Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`.yellow.bold);
+});
+
+module.exports = app;
