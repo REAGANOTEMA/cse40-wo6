@@ -1,7 +1,9 @@
 // routes/orderroute.js
+
 const express = require('express');
 const router = express.Router();
 
+// Import controller functions
 const {
     createOrder,
     getMyOrders,
@@ -9,14 +11,28 @@ const {
     updateOrderStatus
 } = require('../controllers/ordercontroller');
 
+// Import authentication middleware
 const { protect, admin } = require('../middleware/authmiddleware');
 
-// User routes
+// =========================
+// USER ORDER ROUTES
+// =========================
+
+// Create a new order
 router.post('/', protect, createOrder);
+
+// Get logged-in user's orders
 router.get('/myorders', protect, getMyOrders);
+
+// Get specific order by ID
 router.get('/:id', protect, getOrderById);
 
-// Admin route
+// =========================
+// ADMIN ROUTES
+// =========================
+
+// Update order status
 router.put('/:id/status', protect, admin, updateOrderStatus);
 
+// Export router
 module.exports = router;
