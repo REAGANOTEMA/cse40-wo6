@@ -1,0 +1,59 @@
+<!-- Author: Reagan Otema -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Vehicle</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="/js/form-validation.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1>Add New Vehicle</h1>
+    </header>
+
+    <% if (message) { %>
+        <div class="flash-message"><%= message %></div>
+    <% } %>
+
+    <% if (errors) { %>
+        <ul class="errors">
+            <% errors.forEach(error => { %>
+                <li><%= error.msg %></li>
+            <% }) %>
+        </ul>
+    <% } %>
+
+    <form id="addVehicleForm" action="/inv/add-inventory" method="POST" novalidate>
+        <label for="classificationList">Classification:</label>
+        <%= classificationList %>
+
+        <label for="invMake">Make:</label>
+        <input type="text" name="inv_make" id="invMake" required value="<%= inv_make || '' %>">
+
+        <label for="invModel">Model:</label>
+        <input type="text" name="inv_model" id="invModel" required value="<%= inv_model || '' %>">
+
+        <label for="invDescription">Description:</label>
+        <textarea name="inv_description" id="invDescription" required><%= inv_description || '' %></textarea>
+
+        <label for="invImage">Image Path:</label>
+        <input type="text" name="inv_image" id="invImage" value="<%= inv_image || '/images/vehicles/no-image.png' %>">
+
+        <label for="invThumbnail">Thumbnail Path:</label>
+        <input type="text" name="inv_thumbnail" id="invThumbnail" value="<%= inv_thumbnail || '/images/vehicles/no-image-tn.png' %>">
+
+        <label for="invPrice">Price:</label>
+        <input type="number" step="0.01" name="inv_price" id="invPrice" required value="<%= inv_price || '' %>">
+
+        <label for="invStock">Stock:</label>
+        <input type="number" name="inv_stock" id="invStock" required value="<%= inv_stock || '' %>">
+
+        <label for="invColor">Color:</label>
+        <input type="text" name="inv_color" id="invColor" required value="<%= inv_color || '' %>">
+
+        <button type="submit">Add Vehicle</button>
+    </form>
+</body>
+</html>

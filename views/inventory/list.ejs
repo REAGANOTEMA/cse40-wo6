@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vehicle Inventory</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4f4f4;
+    }
+    header {
+      background: #333;
+      color: #fff;
+      padding: 1em;
+    }
+    header nav a {
+      color: #fff;
+      margin-right: 1em;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    main {
+      max-width: 1200px;
+      margin: 2em auto;
+      padding: 0 1em;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 2em;
+    }
+    .vehicle-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2em;
+    }
+    .vehicle-card {
+      background: #fff;
+      padding: 1em;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+    }
+    .vehicle-card:hover {
+      transform: translateY(-5px);
+    }
+    .vehicle-card img {
+      width: 100%;
+      border-radius: 8px;
+      margin-bottom: 1em;
+    }
+    .vehicle-card h3 {
+      margin: 0.5em 0;
+    }
+    .vehicle-card p {
+      margin: 0.3em 0;
+    }
+    .btn {
+      display: inline-block;
+      margin-top: 0.5em;
+      padding: 0.5em 1em;
+      background: #007BFF;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 5px;
+      transition: background 0.2s;
+    }
+    .btn:hover {
+      background: #0056b3;
+    }
+    footer {
+      text-align: center;
+      padding: 2em 0;
+      background: #333;
+      color: #fff;
+      margin-top: 3em;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/inventory">Inventory</a>
+  </nav>
+</header>
+
+<main>
+  <h1>Available Vehicles</h1>
+
+  <% if (vehicles && vehicles.length > 0) { %>
+    <div class="vehicle-grid">
+      <% vehicles.forEach(v => { %>
+        <div class="vehicle-card">
+          <img src="/images/vehicles/<%= v.image %>" alt="<%= v.make %> <%= v.model %>">
+          <h3><%= v.make %> <%= v.model %></h3>
+          <p><strong>Year:</strong> <%= v.year %></p>
+          <p><strong>Price:</strong> $<%= Number(v.price).toLocaleString() %></p>
+          <p><strong>Mileage:</strong> <%= Number(v.mileage).toLocaleString() %> miles</p>
+          <a class="btn" href="/inventory/vehicle/<%= v.id %>">View Details</a>
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <p style="text-align:center; font-size:1.2em;">No vehicles available at the moment.</p>
+  <% } %>
+</main>
+
+<footer>
+  <p>&copy; <%= new Date().getFullYear() %> Reagan Otema</p>
+</footer>
+
+</body>
+</html>

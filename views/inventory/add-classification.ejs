@@ -1,0 +1,34 @@
+<!-- Author: Reagan Otema -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Classification</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="/js/form-validation.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1>Add New Classification</h1>
+    </header>
+
+    <% if (message) { %>
+        <div class="flash-message"><%= message %></div>
+    <% } %>
+
+    <% if (errors && errors.length) { %>
+        <ul class="errors">
+            <% errors.forEach(error => { %>
+                <li><%= error.msg %></li>
+            <% }); %>
+        </ul>
+    <% } %>
+
+    <form id="addClassificationForm" action="/inv/add-classification" method="POST" novalidate>
+        <label for="classificationName">Classification Name:</label>
+        <input type="text" name="classification_name" id="classificationName" required pattern="^[A-Za-z0-9]+$" value="<%= classification_name || '' %>">
+        <button type="submit">Add Classification</button>
+    </form>
+</body>
+</html>
