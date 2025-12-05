@@ -1,10 +1,18 @@
-const mysql = require('mysql2/promise');
+// config/db.js
+const mongoose = require('mongoose');
 
-const db = mysql.createPool({
-    host: 'localhost',
-    user: 'root',
-    password: 'yourpassword',
-    database: 'yourdatabase',
-});
+const connectDB = async () => {
+    try {
+        const conn = await mongoose.connect(process.env.MONGO_URI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+        });
 
-module.exports = db;
+        console.log(`MongoDB Connected: ${conn.connection.host}`);
+    } catch (error) {
+        console.error(`Error: ${error.message}`);
+        process.exit(1);
+    }
+};
+
+module.exports = connectDB; // ✅ Export the function correctly
