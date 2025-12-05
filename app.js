@@ -1,27 +1,29 @@
 // app.js
 const express = require('express');
 const dotenv = require('dotenv');
-const connectDB = require('./config/db'); // Database connection
 const path = require('path');
+const connectDB = require('./config/db'); // Your database connection
+const productRoutes = require('./routes/productroute');
+const reviewRoutes = require('./routes/reviewroute');
+const orderRoutes = require('./routes/orderroute');
+const userRoutes = require('./routes/userroute');
+const { notFound, errorHandler } = require('./middleware/errormiddleware');
 
 dotenv.config();
 
 const app = express();
 
-// Connect to database
+// Connect to MongoDB
 connectDB();
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.set('view engine', 'ejs');
 
-// Routes
-const productRoutes = require('./routes/productroute');
-const reviewRoutes = require('./routes/reviewroute');
-const orderRoutes = require('./routes/orderroute');
-const userRoutes = require('./routes/userroute');
+// View engine
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views')); // Ensure views folder exists
 
 // API routes
 app.use('/api/products', productRoutes);
@@ -29,12 +31,11 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/users', userRoutes);
 
-// Frontend views (optional)
+// Frontend routes (for rendering EJS views)
 app.use('/products', productRoutes);
 app.use('/reviews', reviewRoutes);
 
 // Error handling middleware
-const { notFound, errorHandler } = require('./middleware/errormiddleware');
 app.use(notFound);
 app.use(errorHandler);
 

@@ -1,6 +1,5 @@
-const Product = require('../models/product'); // Ensure the file is exactly 'product.js'
+const Product = require('../models/product'); // exact filename match
 
-// List all products
 exports.list = async (req, res) => {
   try {
     const products = await Product.find();
@@ -11,20 +10,16 @@ exports.list = async (req, res) => {
   }
 };
 
-// Show add form
 exports.addForm = (req, res) => {
   res.render('products/add', { error: null });
 };
 
-// Add new product
 exports.add = async (req, res) => {
   try {
     const { name, price, description, category, stock, imageUrl } = req.body;
 
     if (!name || !price || !description || !category) {
-      return res.render('products/add', {
-        error: "Name, price, description, and category are required."
-      });
+      return res.render('products/add', { error: "Name, price, description, and category are required." });
     }
 
     await Product.create({ name, price, description, category, stock, imageUrl });
@@ -35,13 +30,10 @@ exports.add = async (req, res) => {
   }
 };
 
-// Show edit form
 exports.editForm = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
-
     if (!product) return res.status(404).send("Product not found");
-
     res.render('products/edit', { product, error: null });
   } catch (err) {
     console.error(err);
@@ -49,22 +41,15 @@ exports.editForm = async (req, res) => {
   }
 };
 
-// Update product
 exports.update = async (req, res) => {
   try {
     const { name, price, description, category, stock, imageUrl } = req.body;
 
     if (!name || !price || !description || !category) {
-      return res.render('products/edit', {
-        product: { _id: req.params.id },
-        error: "All fields are required."
-      });
+      return res.render('products/edit', { product: { _id: req.params.id }, error: "All fields are required." });
     }
 
-    await Product.findByIdAndUpdate(req.params.id, {
-      name, price, description, category, stock, imageUrl
-    });
-
+    await Product.findByIdAndUpdate(req.params.id, { name, price, description, category, stock, imageUrl });
     res.redirect('/products');
   } catch (err) {
     console.error(err);
@@ -72,13 +57,10 @@ exports.update = async (req, res) => {
   }
 };
 
-// Show product details
 exports.details = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
-
     if (!product) return res.status(404).send("Product not found");
-
     res.render('products/details', { product });
   } catch (err) {
     console.error(err);
@@ -86,7 +68,6 @@ exports.details = async (req, res) => {
   }
 };
 
-// Delete product
 exports.delete = async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);
