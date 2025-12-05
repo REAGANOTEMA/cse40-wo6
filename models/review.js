@@ -1,31 +1,37 @@
-const db = require("../config/db");
+const mongoose = require("mongoose");
 
-class Review {
-  static async addReview(data) {
-    const { product_id, user_name, rating, comment } = data;
-    const sql = `INSERT INTO Reviews (product_id, user_name, rating, comment) VALUES (?, ?, ?, ?)`;
-    try {
-      const [result] = await db.execute(sql, [
-        product_id,
-        user_name,
-        rating,
-        comment,
-      ]);
-      return result;
-    } catch (err) {
-      throw new Error("Error adding review: " + err.message);
-    }
-  }
+const reviewSchema = new mongoose.Schema(
+  {
+    productId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+      required: true,
+    },
 
-  static async getReviewsByProduct(product_id) {
-    const sql = `SELECT * FROM Reviews WHERE product_id = ? ORDER BY created_at DESC`;
-    try {
-      const [rows] = await db.execute(sql, [product_id]);
-      return rows;
-    } catch (err) {
-      throw new Error("Error fetching reviews: " + err.message);
-    }
-  }
-}
+    name: {
+      type: String,
+      required: [true, "Reviewer name is required"],
+      trim: true,
+    },
 
-module.exports = Review;
+    rating: {
+      type: Number,
+      min: 1,
+      max: 5,
+      required: [true, "Rating is required"],
+    },
+
+    comment: {
+      type: String,
+      required: [true, "Comment is required"],
+    },
+
+    createdBy: {
+      type: String,
+      default: "Reagan Otema",
+    },
+  },
+  { timestamps: true }
+);
+
+module.exports = mongoose.model("Review", reviewSchema);

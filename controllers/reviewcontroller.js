@@ -1,34 +1,35 @@
-const Review = require('../models/review');
+const Review = require('../models/reviewmodel');
 
-exports.showReviewForm = (req, res) => {
-    res.render('reviews/reviewForm', { error: null, designer: 'Reagan Otema', product_id: req.query.product_id });
+exports.form = (req, res) => {
+    res.render('reviews/addreview', { error: null });
 };
 
-exports.createReview = async (req, res) => {
+exports.add = async (req, res) => {
     try {
-        const { product_id, user_name, rating, comment } = req.body;
+        const { name, feedback } = req.body;
 
-        if (!user_name || !rating || rating < 1 || rating > 5) {
-            return res.status(400).render('reviews/reviewForm', {
-                error: 'Name and rating (1-5) are required!',
-                designer: 'Reagan Otema',
-                product_id
+        if (!name || !feedback) {
+            return res.render('reviews/addreview', {
+                error: "All fields are required."
             });
         }
 
-        await Review.addReview({ product_id, user_name, rating, comment });
-        res.redirect(`/reviews/product/${product_id}`);
+        await Review.create(name, feedback);
+        res.redirect('/reviews/all');
     } catch (err) {
-        res.status(500).render('reviews/reviewForm', { error: err.message, designer: 'Reagan Otema', product_id });
+        console.error(err);
+        res.status(500).render('reviews/addreview', {
+            error: "Error submitting review"
+        });
     }
 };
 
-exports.listReviews = async (req, res) => {
+exports.all = async (req, res) => {
     try {
-        const product_id = req.params.id;
-        const reviews = await Review.getReviewsByProduct(product_id);
-        res.render('reviews/reviewList', { reviews, designer: 'Reagan Otema' });
+        const [rows] = await Review.getAll();
+        res.render('reviews/listreviews', { reviews: rows });
     } catch (err) {
-        res.status(500).send('Error fetching reviews: ' + err.message);
+        console.error(err);
+        res.status(500).send("Error loading reviews");
     }
 };

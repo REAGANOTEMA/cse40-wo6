@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
-const reviewRoutes = require('./routes/reviewRoutes');
-const productRoutes = require('./routes/productRoutes');
+const reviewRoutes = require('./routes/reviewroute');
+const productRoutes = require('./routes/productroute');
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
