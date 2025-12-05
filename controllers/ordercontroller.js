@@ -5,7 +5,7 @@ const asyncHandler = require('express-async-handler');
 
 // @desc   Create a new order
 // @route  POST /api/orders
-// @access Private (requires login)
+// @access Private
 exports.createOrder = asyncHandler(async (req, res) => {
     const { items, total } = req.body;
 
@@ -14,7 +14,6 @@ exports.createOrder = asyncHandler(async (req, res) => {
         throw new Error("Order must contain at least one item");
     }
 
-    // Validate stock
     for (let item of items) {
         const product = await Product.findById(item.product);
 
@@ -28,7 +27,6 @@ exports.createOrder = asyncHandler(async (req, res) => {
             throw new Error(`Not enough stock for product: ${product.name}`);
         }
 
-        // Reduce product stock
         product.stock -= item.quantity;
         await product.save();
     }
@@ -67,7 +65,6 @@ exports.getOrderById = asyncHandler(async (req, res) => {
         throw new Error("Order not found");
     }
 
-    // Allow only owner or admin
     if (order.user._id.toString() !== req.user._id.toString() && !req.user.isAdmin) {
         res.status(403);
         throw new Error("Not authorized to view this order");
@@ -81,7 +78,6 @@ exports.getOrderById = asyncHandler(async (req, res) => {
 // @access Admin
 exports.updateOrderStatus = asyncHandler(async (req, res) => {
     const { status } = req.body;
-
     const allowedStatuses = ["Pending", "Processing", "Shipped", "Delivered", "Canceled"];
 
     if (!allowedStatuses.includes(status)) {

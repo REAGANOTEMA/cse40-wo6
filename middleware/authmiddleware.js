@@ -1,16 +1,25 @@
-// src/middleware/authmiddleware.js
+// middleware/authmiddleware.js
+const asyncHandler = require('express-async-handler');
+const User = require('../models/user');
 
-// Simple auth middleware example
-// Replace this with real authentication logic if needed
-
-const protect = (req, res, next) => {
-  // Example: check if a header 'authorization' exists
-  if (req.headers.authorization) {
-    // Normally you would verify a JWT or session here
+const protect = asyncHandler(async (req, res, next) => {
+    // TODO: implement authentication logic
+    // Example: attach req.user
+    req.user = await User.findById(req.headers.userid); // replace with real auth
+    if (!req.user) {
+        res.status(401);
+        throw new Error("Not authorized, user not found");
+    }
     next();
-  } else {
-    res.status(401).json({ message: 'Not authorized' });
-  }
+});
+
+const admin = (req, res, next) => {
+    if (req.user && req.user.isAdmin) {
+        next();
+    } else {
+        res.status(401);
+        throw new Error('Not authorized as admin');
+    }
 };
 
-module.exports = { protect };
+module.exports = { protect, admin };
