@@ -1,4 +1,4 @@
-const Product = require('../models/product'); // Make sure this matches the exact filename
+const Product = require('../models/product'); // Ensure the file is exactly 'product.js'
 
 // List all products
 exports.list = async (req, res) => {
