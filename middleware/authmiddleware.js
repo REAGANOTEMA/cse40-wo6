@@ -1,25 +1,40 @@
-// middleware/authmiddleware.js
+const jwt = require('jsonwebtoken');
 const asyncHandler = require('express-async-handler');
-const User = require('../models/user');
+const User = require('../models/usermodel'); // ✅ match filename
 
+// Protect routes
 const protect = asyncHandler(async (req, res, next) => {
-    // TODO: implement authentication logic
-    // Example: attach req.user
-    req.user = await User.findById(req.headers.userid); // replace with real auth
-    if (!req.user) {
-        res.status(401);
-        throw new Error("Not authorized, user not found");
+  let token;
+
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    try {
+      token = req.headers.authorization.split(' ')[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = await User.findById(decoded.id).select('-password');
+      next();
+    } catch (error) {
+      res.status(401);
+      throw new Error('Not authorized, token failed');
     }
-    next();
+  }
+
+  if (!token) {
+    res.status(401);
+    throw new Error('Not authorized, no token');
+  }
 });
 
+// Admin middleware
 const admin = (req, res, next) => {
-    if (req.user && req.user.isAdmin) {
-        next();
-    } else {
-        res.status(401);
-        throw new Error('Not authorized as admin');
-    }
+  if (req.user && req.user.isAdmin) {
+    next();
+  } else {
+    res.status(403);
+    throw new Error('Not authorized as an admin');
+  }
 };
 
 module.exports = { protect, admin };
