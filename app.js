@@ -18,10 +18,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 
 // Routes
-const productRoutes = require('./routes/productroutes');
-const reviewRoutes = require('./routes/reviewroutes');
-const orderRoutes = require('./routes/orderroutes');
-const userRoutes = require('./routes/userroutes');
+const productRoutes = require('./routes/productroute');
+const reviewRoutes = require('./routes/reviewroute');
+const orderRoutes = require('./routes/orderroute');
+const userRoutes = require('./routes/userroute');
 
 // API routes
 app.use('/api/products', productRoutes);
