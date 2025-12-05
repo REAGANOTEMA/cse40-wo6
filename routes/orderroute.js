@@ -1,15 +1,8 @@
-// routes/orderroute.js
 const express = require('express');
 const router = express.Router();
 
-const {
-    createOrder,
-    getMyOrders,
-    getOrderById,
-    updateOrderStatus
-} = require('../controllers/ordercontroller'); // lowercase
-
-const { protect, admin } = require('../middleware/authmiddleware'); // lowercase
+const { createOrder, getMyOrders, getOrderById, updateOrderStatus } = require('../controllers/ordercontroller');
+const { protect, admin } = require('../middleware/authmiddleware');
 
 // User routes
 router.post('/', protect, createOrder);
