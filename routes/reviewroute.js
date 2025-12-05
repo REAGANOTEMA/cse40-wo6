@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const reviewController = require('../controllers/reviewcontroller');
+const { list, add } = require('../controllers/reviewcontroller');
 
-router.get('/new', reviewController.showReviewForm);
-router.post('/', reviewController.createReview);
-router.get('/product/:id', reviewController.listReviews);
+// Get all reviews
+router.get('/', list);
+
+// Add a review
+router.post('/', add);
 
 module.exports = router;
