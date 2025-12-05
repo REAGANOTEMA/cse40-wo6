@@ -2,7 +2,6 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
-const colors = require('colors'); // optional, for console logging
 const path = require('path');
 
 // Load environment variables
@@ -11,7 +10,7 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(express.json()); // parse JSON requests
+app.use(express.json());
 
 // Connect to MongoDB
 const connectDB = async () => {
@@ -20,9 +19,9 @@ const connectDB = async () => {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
-    console.log(`MongoDB Connected: ${conn.connection.host}`.cyan.underline);
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
-    console.error(`Error: ${error.message}`.red.bold);
+    console.error(`Error: ${error.message}`);
     process.exit(1);
   }
 };
@@ -70,7 +69,7 @@ app.use((err, req, res, next) => {
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`.yellow.bold);
+  console.log(`Server running on port ${PORT}`);
 });
 
 module.exports = app;
