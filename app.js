@@ -2,7 +2,6 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
-const path = require('path');
 const cors = require('cors');
 
 // Load environment variables
@@ -12,21 +11,35 @@ const app = express();
 
 // Middleware
 app.use(express.json());
-app.use(cors());
 
-// MongoDB connection
+// CORS
+app.use(
+  cors({
+    origin: '*', // Allow all clients (Render-friendly)
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
+
+// MongoDB Connection
 const connectDB = async () => {
   const mongoUri = process.env.MONGO_URI;
+
   if (!mongoUri) {
     console.error('❌ ERROR: MONGO_URI is missing in environment variables');
-    return process.exit(1);
+    process.exit(1);
   }
 
   try {
-    const conn = await mongoose.connect(mongoUri);
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+    await mongoose.connect(mongoUri, {
+      serverSelectionTimeoutMS: 10000, // Avoid long hangs
+      socketTimeoutMS: 45000,
+    });
+
+    console.log(`✅ MongoDB Connected`);
   } catch (error) {
     console.error(`❌ MongoDB Connection Error: ${error.message}`);
+    console.error('➡️ FIX: Make sure your MongoDB Atlas IP whitelist includes 0.0.0.0/0');
     process.exit(1);
   }
 };
@@ -45,36 +58,40 @@ app.use('/api/products', productRoutes);
 
 // Root route
 app.get('/', (req, res) => {
-  res.json({
-    status: "success",
-    message: 'API is running',
-    available_routes: [
+  res.status(200).json({
+    status: 'success',
+    message: 'API is running successfully',
+    routes: [
       { method: 'POST', path: '/api/orders' },
       { method: 'GET', path: '/api/orders/myorders' },
       { method: 'PUT', path: '/api/orders/:id/status' },
       { method: 'GET', path: '/api/products' },
       { method: 'POST', path: '/api/users/login' },
-      { method: 'POST', path: '/api/users/register' }
-    ]
+      { method: 'POST', path: '/api/users/register' },
+    ],
   });
 });
 
-// 404 handler
+// 404 Not Found Middleware
 app.use((req, res, next) => {
-  res.status(404).json({ error: `Not Found - ${req.originalUrl}` });
+  res.status(404).json({
+    error: `Route Not Found: ${req.originalUrl}`,
+  });
 });
 
-// Error handler
+// Global Error Handler
 app.use((err, req, res, next) => {
-  console.error(`❌ Server Error: ${err.message}`);
+  console.error('❌ SERVER ERROR:', err);
+
   res.status(res.statusCode === 200 ? 500 : res.statusCode).json({
     message: err.message,
-    stack: process.env.NODE_ENV === 'production' ? undefined : err.stack
+    stack: process.env.NODE_ENV === 'production' ? undefined : err.stack,
   });
 });
 
-// Start server
+// Start Server
 const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
