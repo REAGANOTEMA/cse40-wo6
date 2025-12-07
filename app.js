@@ -1,3 +1,4 @@
+// app.js
 const express = require("express");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
@@ -18,7 +19,11 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Middleware
 app.use(express.json());
-app.use(cors({ origin: "*", methods: ["GET","POST","PUT","DELETE","PATCH"], allowedHeaders: ["Content-Type","Authorization"] }));
+app.use(cors({ 
+  origin: "*", 
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"], 
+  allowedHeaders: ["Content-Type", "Authorization"] 
+}));
 
 // ====== DATABASE ======
 const connectDB = async () => {
@@ -27,7 +32,10 @@ const connectDB = async () => {
     process.exit(1);
   }
   try {
-    await mongoose.connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 10000, socketTimeoutMS: 45000 });
+    await mongoose.connect(process.env.MONGO_URI, { 
+      serverSelectionTimeoutMS: 10000, 
+      socketTimeoutMS: 45000 
+    });
     console.log("✅ MongoDB Connected");
   } catch (err) {
     console.error("❌ MongoDB Error:", err.message);
@@ -49,7 +57,7 @@ app.use("/api/wishlist", wishlistRoutes);
 
 // ====== PAGE ROUTES ======
 
-// Dashboard
+// Dashboard (index.ejs)
 app.get("/", (req, res) => {
   res.render("index", {
     status: "success",
@@ -66,38 +74,35 @@ app.get("/", (req, res) => {
   });
 });
 
-// Products Page
-app.get("/products", async (req, res, next) => {
+// Generic List Page for Products, Wishlist, Reviews (list.ejs)
+const renderListPage = (Model, title) => async (req, res, next) => {
   try {
-    const Product = require("./models/Product");
-    const products = await Product.find();
-    res.render("list", { title: "Products Page", items: products });
-  } catch (err) { next(err); }
-});
+    const items = await Model.find();
+    res.render("list", { title, items });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Products Page
+const Product = require("./models/Product");
+app.get("/products", renderListPage(Product, "Products Page"));
 
 // Wishlist Page
-app.get("/wishlist", async (req, res, next) => {
-  try {
-    const Wishlist = require("./models/Wishlist");
-    const items = await Wishlist.find();
-    res.render("list", { title: "Wishlist Page", items });
-  } catch (err) { next(err); }
-});
+const Wishlist = require("./models/Wishlist");
+app.get("/wishlist", renderListPage(Wishlist, "Wishlist Page"));
 
 // Reviews Page
-app.get("/reviews", async (req, res, next) => {
-  try {
-    const Review = require("./models/Review");
-    const reviews = await Review.find();
-    res.render("list", { title: "Reviews Page", items: reviews });
-  } catch (err) { next(err); }
+const Review = require("./models/Review");
+app.get("/reviews", renderListPage(Review, "Reviews Page"));
+
+// ====== 404 Page ======
+app.use((req, res) => {
+  res.status(404).render("404", { error: "Page Not Found" });
 });
 
-// 404 Page
-app.use((req,res)=>res.status(404).render("404",{ error: "Page Not Found" }));
-
-// Global Error Handler
-app.use((err, req, res, next)=>{
+// ====== GLOBAL ERROR HANDLER ======
+app.use((err, req, res, next) => {
   console.error("❌ SERVER ERROR:", err);
   res.status(500).render("error", {
     message: err.message,
@@ -105,7 +110,8 @@ app.use((err, req, res, next)=>{
   });
 });
 
-// Start Server
+// ====== START SERVER ======
 const PORT = process.env.PORT || 5000;
-app.listen(PORT,()=>console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
 module.exports = app;
