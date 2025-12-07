@@ -4,64 +4,25 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>API Dashboard</title>
-
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f9;
-      margin: 0;
-      padding: 20px;
-      color: #333;
-    }
-
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-      background: #fff;
-      padding: 25px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-
-    h1 {
-      text-align: center;
-      color: #0077cc;
-    }
-
-    h2 {
-      margin-top: 30px;
-      color: #444;
-    }
-
-    .route-box {
-      background: #eef5ff;
-      padding: 12px;
-      margin: 8px 0;
-      border-left: 5px solid #0077cc;
-      border-radius: 5px;
-      font-size: 16px;
-    }
-
-    .footer {
-      margin-top: 40px;
-      text-align: center;
-      color: #777;
-      font-size: 14px;
-    }
-
+    body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; color: #333; }
+    .container { max-width: 900px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    h1 { text-align: center; color: #0077cc; }
+    h2 { margin-top: 30px; color: #444; }
+    .route-box { background: #eef5ff; padding: 12px; margin: 8px 0; border-left: 5px solid #0077cc; border-radius: 5px; font-size: 16px; }
+    .link { color: #0077cc; text-decoration: none; }
+    .link:hover { text-decoration: underline; }
+    .footer { margin-top: 40px; text-align: center; color: #777; font-size: 14px; }
   </style>
 </head>
-
 <body>
   <div class="container">
-
     <h1>🚀 CSE40 Week 06 API Dashboard</h1>
-
     <p>Welcome! Your backend is running successfully on Render.</p>
 
     <h2>✔ API Status</h2>
-    <p><strong>Status:</strong> <%= typeof status !== "undefined" ? status : "OK" %></p>
-    <p><strong>Message:</strong> <%= typeof message !== "undefined" ? message : "API is running successfully." %></p>
+    <p><strong>Status:</strong> <%= typeof status !== "undefined" ? status : "success" %></p>
+    <p><strong>Message:</strong> <%= typeof message !== "undefined" ? message : "API is running correctly on Render" %></p>
 
     <h2>📌 Available Routes</h2>
 
@@ -71,19 +32,24 @@
       { method: "PUT", path: "/api/orders/:id/status" },
       { method: "GET", path: "/api/products" },
       { method: "POST", path: "/api/users/login" },
-      { method: "POST", path: "/api/users/register" }
+      { method: "POST", path: "/api/users/register" },
+      { method: "GET", path: "/api/wishlist" }
     ]; %>
 
     <% routeList.forEach(route => { %>
       <div class="route-box">
-        <strong><%= route.method %></strong> — <%= route.path %>
+        <strong><%= route.method %></strong> — <a class="link" href="<%= route.path %>"><%= route.path %></a>
       </div>
     <% }) %>
 
-    <div class="footer">
-      <p>© <%= new Date().getFullYear() %> CSE40 — API Deployment on Render</p>
-    </div>
+    <h2>📌 Pages</h2>
+    <div class="route-box"><a class="link" href="/products">Products Page</a></div>
+    <div class="route-box"><a class="link" href="/wishlist">Wishlist Page</a></div>
+    <div class="route-box"><a class="link" href="/reviews">Reviews Page</a></div>
 
+    <div class="footer">
+      <p>© <%= new Date().getFullYear() %> CSE40 — Designed by Reagan Otema — API Deployment on Render</p>
+    </div>
   </div>
 </body>
 </html>
