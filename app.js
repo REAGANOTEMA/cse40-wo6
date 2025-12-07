@@ -1,4 +1,3 @@
-// app.js
 const express = require("express");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
@@ -41,7 +40,6 @@ const connectDB = async () => {
       serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 45000,
     });
-
     console.log("✅ MongoDB Connected");
   } catch (error) {
     console.error("❌ MongoDB Error:", error.message);
@@ -86,7 +84,7 @@ app.get("/products", async (req, res, next) => {
   try {
     const Product = require("./models/Product");
     const products = await Product.find();
-    res.render("products", { products });
+    res.render("list", { items: products, title: "All Products" });
   } catch (err) {
     next(err);
   }
@@ -97,7 +95,7 @@ app.get("/wishlist", async (req, res, next) => {
   try {
     const Wishlist = require("./models/Wishlist");
     const items = await Wishlist.find();
-    res.render("wishlist", { items });
+    res.render("list", { items, title: "Wishlist Items" });
   } catch (err) {
     next(err);
   }
@@ -108,7 +106,7 @@ app.get("/reviews", async (req, res, next) => {
   try {
     const Review = require("./models/Review");
     const reviews = await Review.find();
-    res.render("reviews", { reviews });
+    res.render("list", { items: reviews, title: "Reviews" });
   } catch (err) {
     next(err);
   }
@@ -126,7 +124,6 @@ app.use((err, req, res, next) => {
   console.error("❌ SERVER ERROR:", err);
 
   res.status(500).render("error", {
-    error,
     message: err.message,
     stack: process.env.NODE_ENV === "production" ? null : err.stack,
   });
