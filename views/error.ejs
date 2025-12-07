@@ -1,46 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Error - CSE40 Application</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f8d7da;
-            padding: 40px;
-            color: #721c24;
-        }
-        .box {
-            background: #f5c6cb;
-            padding: 20px;
-            border-left: 6px solid #c0392b;
-            border-radius: 8px;
-            width: 70%;
-            margin: auto;
-        }
-        h1 { margin-top: 0; }
-        a {
-            color: #721c24;
-            text-decoration: underline;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Error</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #ffecec;
+      padding: 40px;
+      color: #a10000;
+    }
+
+    .error-box {
+      background: #fff4f4;
+      padding: 25px;
+      border-left: 7px solid #ff3b3b;
+      border-radius: 6px;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+
+    .footer {
+      margin-top: 40px;
+      text-align: center;
+      color: #777;
+      font-size: 14px;
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="box">
-    <h1>⚠ An Error Occurred</h1>
-    <p><strong>Message:</strong> <%= message %></p>
+  <div class="error-box">
+    <h1>❌ An Error Occurred</h1>
 
-    <% if (stack) { %>
-        <h3>Stack Trace (Development Only):</h3>
-        <pre><%= stack %></pre>
+    <p><strong>Message:</strong> <%= error && error.message ? error.message : "Unknown error" %></p>
+
+    <% if (error && error.stack) { %>
+      <pre><%= error.stack %></pre>
     <% } %>
+  </div>
 
-    <p>
-        <a href="/">← Go back to Home</a>
-    </p>
-</div>
+  <div class="footer">
+    <p>© <%= new Date().getFullYear() %> CSE40 API – Error Handler</p>
+  </div>
 
 </body>
 </html>

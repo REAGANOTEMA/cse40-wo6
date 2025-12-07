@@ -1,142 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>CSE40 Final Enhancement</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f6f9;
-            margin: 0; padding: 0;
-        }
-        header {
-            background: #2c3e50;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        .container {
-            width: 90%;
-            margin: 30px auto;
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        h2 {
-            color: #34495e;
-        }
-        .routes {
-            background: #ecf0f1;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        .enhancement-box {
-            border-left: 5px solid #27ae60;
-            padding: 15px;
-            background: #f9fff9;
-            margin-bottom: 20px;
-            border-radius: 6px;
-        }
-        form {
-            margin-top: 20px;
-        }
-        input, button {
-            padding: 10px;
-            font-size: 16px;
-            margin: 5px 0;
-        }
-        button {
-            background: #27ae60;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #219150;
-        }
-        footer {
-            text-align: center;
-            margin-top: 30px;
-            padding: 15px;
-            color: #777;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Dashboard</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #0077cc;
+    }
+
+    h2 {
+      margin-top: 30px;
+      color: #444;
+    }
+
+    .route-box {
+      background: #eef5ff;
+      padding: 12px;
+      margin: 8px 0;
+      border-left: 5px solid #0077cc;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    .footer {
+      margin-top: 40px;
+      text-align: center;
+      color: #777;
+      font-size: 14px;
+    }
+
+  </style>
 </head>
 
 <body>
+  <div class="container">
 
-<header>
-    <h1>CSE40 Final Enhancement - API Dashboard</h1>
-</header>
+    <h1>🚀 CSE40 Week 06 API Dashboard</h1>
 
-<div class="container">
+    <p>Welcome! Your backend is running successfully on Render.</p>
 
     <h2>✔ API Status</h2>
-    <p><strong>Status:</strong> <%= status %></p>
-    <p><strong>Message:</strong> <%= message %></p>
+    <p><strong>Status:</strong> <%= typeof status !== "undefined" ? status : "OK" %></p>
+    <p><strong>Message:</strong> <%= typeof message !== "undefined" ? message : "API is running successfully." %></p>
 
     <h2>📌 Available Routes</h2>
-    <div class="routes">
-        <ul>
-            <% routes.forEach(route => { %>
-                <li><strong><%= route.method %></strong> → <%= route.path %></li>
-            <% }) %>
-        </ul>
+
+    <% const routeList = routes || [
+      { method: "POST", path: "/api/orders" },
+      { method: "GET", path: "/api/orders/myorders" },
+      { method: "PUT", path: "/api/orders/:id/status" },
+      { method: "GET", path: "/api/products" },
+      { method: "POST", path: "/api/users/login" },
+      { method: "POST", path: "/api/users/register" }
+    ]; %>
+
+    <% routeList.forEach(route => { %>
+      <div class="route-box">
+        <strong><%= route.method %></strong> — <%= route.path %>
+      </div>
+    <% }) %>
+
+    <div class="footer">
+      <p>© <%= new Date().getFullYear() %> CSE40 — API Deployment on Render</p>
     </div>
 
-    <h2>🌟 Final Enhancement: Wishlist Feature</h2>
-
-    <div class="enhancement-box">
-        <p>You can add a product to your Wishlist using the form below.  
-           This demonstrates:</p>
-        <ul>
-            <li>✔ Database interaction</li>
-            <li>✔ New model (Wishlist)</li>
-            <li>✔ New controller</li>
-            <li>✔ New view with validation</li>
-            <li>✔ Error handling</li>
-        </ul>
-    </div>
-
-    <h3>Add Item to Wishlist</h3>
-
-    <form action="/api/wishlist" method="POST" onsubmit="return validateWishlistForm()">
-        <label>Product Name:</label><br>
-        <input type="text" id="product" name="product" placeholder="Enter product name">
-
-        <label>User Email:</label><br>
-        <input type="email" id="email" name="email" placeholder="Enter your email">
-
-        <button type="submit">Add to Wishlist</button>
-    </form>
-
-    <script>
-        function validateWishlistForm() {
-            const product = document.getElementById("product").value.trim();
-            const email = document.getElementById("email").value.trim();
-
-            if (product.length < 2) {
-                alert("Product name must be at least 2 characters.");
-                return false;
-            }
-            if (!email.includes("@")) {
-                alert("Please enter a valid email.");
-                return false;
-            }
-
-            return true;
-        }
-    </script>
-
-</div>
-
-<footer>
-    CSE40 Final Project • Render Deployment • MongoDB Atlas Connected
-</footer>
-
+  </div>
 </body>
 </html>
