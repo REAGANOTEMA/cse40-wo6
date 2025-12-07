@@ -101,7 +101,7 @@ app.get("/", (req, res) => {
 
 // Products page (uses your Product model file at models/Product.js)
 try {
-  const Product = require("./models/Product");
+  const Product = require("./models/product");
   app.get("/products", renderListPage(Product, "Products"));
 } catch (e) {
   // If model file missing, route will report error when visited
@@ -110,7 +110,7 @@ try {
 
 // Reviews page
 try {
-  const Review = require("./models/Review");
+  const Review = require("./models/review");
   app.get("/reviews", renderListPage(Review, "Reviews"));
 } catch (e) {
   app.get("/reviews", (req, res) => res.render("list", { title: "Reviews", items: [] }));
@@ -118,7 +118,7 @@ try {
 
 // Wishlist page
 try {
-  const Wishlist = require("./models/Wishlist");
+  const Wishlist = require("./models/wishlist");
   app.get("/wishlist", renderListPage(Wishlist, "Wishlist"));
 } catch (e) {
   app.get("/wishlist", (req, res) => res.render("list", { title: "Wishlist", items: [] }));
