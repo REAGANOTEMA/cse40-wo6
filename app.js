@@ -10,11 +10,11 @@ dotenv.config();
 
 const app = express();
 
-// ======== VIEW ENGINE SETUP (IMPORTANT) =========
+// ======== VIEW ENGINE SETUP =========
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-// Serve public folder
+// Public folder
 app.use(express.static(path.join(__dirname, "public")));
 
 // Middleware
@@ -56,50 +56,77 @@ const userRoutes = require("./routes/userroute");
 const productRoutes = require("./routes/productroute");
 const wishlistRoutes = require("./routes/wishlistroutes");
 
-// API Routes
+// API ROUTES
 app.use("/api/orders", orderRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 
-// ========== PAGE ROUTES (VIEWS) ===========
-// Homepage
+// ======== PAGE ROUTES (FOR EJS) ========
+
+// Homepage Dashboard
 app.get("/", (req, res) => {
-  res.render("index"); // LOADS views/index.ejs
+  res.render("index", {
+    status: "success",
+    message: "API is running correctly on Render",
+    routes: [
+      { method: "POST", path: "/api/orders" },
+      { method: "GET", path: "/api/orders/myorders" },
+      { method: "PUT", path: "/api/orders/:id/status" },
+      { method: "GET", path: "/api/products" },
+      { method: "POST", path: "/api/users/login" },
+      { method: "POST", path: "/api/users/register" },
+      { method: "GET", path: "/api/wishlist" }
+    ],
+  });
 });
 
-// Show all products
-app.get("/products", async (req, res) => {
-  const Product = require("./models/Product");
-  const products = await Product.find();
-  res.render("products", { products });
+// View: All Products
+app.get("/products", async (req, res, next) => {
+  try {
+    const Product = require("./models/Product");
+    const products = await Product.find();
+    res.render("products", { products });
+  } catch (err) {
+    next(err);
+  }
 });
 
-// Show all wishlist items
-app.get("/wishlist", async (req, res) => {
-  const Wishlist = require("./models/Wishlist");
-  const items = await Wishlist.find();
-  res.render("wishlist", { items });
+// View: Wishlist Items
+app.get("/wishlist", async (req, res, next) => {
+  try {
+    const Wishlist = require("./models/Wishlist");
+    const items = await Wishlist.find();
+    res.render("wishlist", { items });
+  } catch (err) {
+    next(err);
+  }
 });
 
-// Example page route (if you have review.ejs)
-app.get("/reviews", async (req, res) => {
-  const Review = require("./models/Review");
-  const reviews = await Review.find();
-  res.render("reviews", { reviews });
+// View: Reviews Page (if Review.ejs exists)
+app.get("/reviews", async (req, res, next) => {
+  try {
+    const Review = require("./models/Review");
+    const reviews = await Review.find();
+    res.render("reviews", { reviews });
+  } catch (err) {
+    next(err);
+  }
 });
 
-// ========== 404 HANDLER ===========
+// ========== 404 PAGE NOT FOUND ==========
 app.use((req, res) => {
   res.status(404).render("404", {
     error: "Page Not Found",
   });
 });
 
-// ========== ERROR HANDLER ==========
+// ========== GLOBAL ERROR HANDLER ==========
 app.use((err, req, res, next) => {
   console.error("❌ SERVER ERROR:", err);
+
   res.status(500).render("error", {
+    error,
     message: err.message,
     stack: process.env.NODE_ENV === "production" ? null : err.stack,
   });
@@ -107,6 +134,7 @@ app.use((err, req, res, next) => {
 
 // ========== START SERVER ==========
 const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
