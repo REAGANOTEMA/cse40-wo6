@@ -50,6 +50,8 @@ connectDB();
 const orderRoutes = require('./routes/orderroute');
 const userRoutes = require('./routes/userroute');
 const productRoutes = require('./routes/productroute');
+const wishlistroutes = require('./routes/wishlistroutes');
+app.use('/api/wishlist', wishlistroutes);
 
 // Mount routes
 app.use('/api/orders', orderRoutes);

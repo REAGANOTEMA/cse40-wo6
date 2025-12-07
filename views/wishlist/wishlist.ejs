@@ -1,0 +1,20 @@
+<%- include('../layout') %>
+
+<h2>Your Wishlist</h2>
+
+<% if (!wishlist || wishlist.products.length === 0) { %>
+    <p>No items in wishlist.</p>
+<% } else { %>
+    <ul>
+        <% wishlist.products.forEach(product => { %>
+            <li>
+                <%= product.name %> - $<%= product.price %>
+                <form method="POST" action="/api/wishlist/remove">
+                    <input type="hidden" name="userId" value="<%= wishlist.user %>">
+                    <input type="hidden" name="productId" value="<%= product._id %>">
+                    <button type="submit">Remove</button>
+                </form>
+            </li>
+        <% }) %>
+    </ul>
+<% } %>
