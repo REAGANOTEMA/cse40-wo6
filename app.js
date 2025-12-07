@@ -1,57 +1,82 @@
+// app.js
 const express = require("express");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
 
-// Load environment variables
+// Load environment variables from .env
 dotenv.config();
 
 const app = express();
 
-// ===== VIEW ENGINE =====
+// ---------- Express / Views ----------
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-// Public folder
+// serve public files (css, images, js)
 app.use(express.static(path.join(__dirname, "public")));
 
-// Middleware
+// parse JSON and urlencoded form bodies
 app.use(express.json());
-app.use(cors({ origin: "*", methods: ["GET","POST","PUT","DELETE","PATCH"], allowedHeaders: ["Content-Type","Authorization"] }));
+app.use(express.urlencoded({ extended: true }));
 
-// ===== DATABASE =====
+// CORS (open for Render). Adjust if you want to restrict origins.
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
+// ---------- Database ----------
 const connectDB = async () => {
-  if(!process.env.MONGO_URI){
-    console.error("❌ MONGO_URI missing");
+  const mongoUri = process.env.MONGO_URI;
+  if (!mongoUri) {
+    console.error("❌ MONGO_URI missing in environment variables");
     process.exit(1);
   }
   try {
-    await mongoose.connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 10000, socketTimeoutMS: 45000 });
+    await mongoose.connect(mongoUri, {
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+      // useNewUrlParser/useUnifiedTopology not required for modern mongoose versions
+    });
     console.log("✅ MongoDB Connected");
   } catch (err) {
-    console.error("❌ MongoDB Error:", err.message);
+    console.error("❌ MongoDB Connection Error:", err.message);
     process.exit(1);
   }
 };
 connectDB();
 
-// ===== ROUTES =====
+// ---------- API ROUTES (only the routes you have) ----------
 const orderRoutes = require("./routes/orderroute");
-const userRoutes = require("./routes/userroute");
 const productRoutes = require("./routes/productroute");
-const wishlistRoutes = require("./routes/wishlistroutes");
 const reviewRoutes = require("./routes/reviewroute");
+const userRoutes = require("./routes/userroute");
+const wishlistRoutes = require("./routes/wishlistroute");
 
 app.use("/api/orders", orderRoutes);
-app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
-app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/wishlist", wishlistRoutes);
 
-// ===== PAGE ROUTES =====
+// ---------- Helper: generic list renderer ----------
+const renderListPage = (Model, title) => async (req, res, next) => {
+  try {
+    // If model is undefined, throw to be handled by error handler
+    if (!Model) throw new Error("Model not found");
+    const items = await Model.find();
+    res.render("list", { title, items });
+  } catch (err) {
+    next(err);
+  }
+};
 
-// Dashboard
+// ---------- PAGE ROUTES (EJS) ----------
+
+// Dashboard: show API status + links (safe defaults)
 app.get("/", (req, res) => {
   res.render("index", {
     status: "success",
@@ -61,64 +86,66 @@ app.get("/", (req, res) => {
       { method: "GET", path: "/api/orders/myorders" },
       { method: "PUT", path: "/api/orders/:id/status" },
       { method: "GET", path: "/api/products" },
+      { method: "GET", path: "/api/reviews" },
       { method: "POST", path: "/api/users/login" },
       { method: "POST", path: "/api/users/register" },
-      { method: "GET", path: "/api/wishlist" },
-      { method: "GET", path: "/api/reviews" }
+      { method: "GET", path: "/api/wishlist" }
+    ],
+    pages: [
+      { name: "Products", path: "/products" },
+      { name: "Reviews", path: "/reviews" },
+      { name: "Wishlist", path: "/wishlist" }
     ]
   });
 });
 
-// Products Page
-app.get("/products", async (req, res, next) => {
-  try {
-    const Product = require("./models/Product");
-    const products = await Product.find();
-    res.render("list", { title: "Products Page", items: products });
-  } catch (err) { next(err); }
+// Products page (uses your Product model file at models/Product.js)
+try {
+  const Product = require("./models/Product");
+  app.get("/products", renderListPage(Product, "Products"));
+} catch (e) {
+  // If model file missing, route will report error when visited
+  app.get("/products", (req, res) => res.render("list", { title: "Products", items: [] }));
+}
+
+// Reviews page
+try {
+  const Review = require("./models/Review");
+  app.get("/reviews", renderListPage(Review, "Reviews"));
+} catch (e) {
+  app.get("/reviews", (req, res) => res.render("list", { title: "Reviews", items: [] }));
+}
+
+// Wishlist page
+try {
+  const Wishlist = require("./models/Wishlist");
+  app.get("/wishlist", renderListPage(Wishlist, "Wishlist"));
+} catch (e) {
+  app.get("/wishlist", (req, res) => res.render("list", { title: "Wishlist", items: [] }));
+}
+
+// ---------- 404 handler ----------
+app.use((req, res) => {
+  res.status(404).render("404", { error: "Page Not Found" });
 });
 
-// Wishlist Page
-app.get("/wishlist", async (req, res, next) => {
-  try {
-    const Wishlist = require("./models/Wishlist");
-    const items = await Wishlist.find();
-    res.render("list", { title: "Wishlist Page", items });
-  } catch (err) { next(err); }
-});
-
-// Reviews Page
-app.get("/reviews", async (req, res, next) => {
-  try {
-    const Review = require("./models/Review");
-    const reviews = await Review.find();
-    res.render("list", { title: "Reviews Page", items: reviews });
-  } catch (err) { next(err); }
-});
-
-// Inventory Page (Vehicles Example)
-app.get("/inventory", async (req, res, next) => {
-  try {
-    const Vehicle = require("./models/Vehicle");
-    const vehicles = await Vehicle.find();
-    res.render("inventory", { vehicles });
-  } catch (err) { next(err); }
-});
-
-// ===== 404 PAGE =====
-app.use((req,res)=>res.status(404).render("404",{ error: "Page Not Found" }));
-
-// ===== GLOBAL ERROR HANDLER =====
-app.use((err, req, res, next)=>{
+// ---------- Global error handler (PASS THE ERR OBJECT to template) ----------
+app.use((err, req, res, next) => {
+  // Log full error server-side
   console.error("❌ SERVER ERROR:", err);
-  res.status(500).render("error", {
-    message: err.message,
+
+  // Respond with rendered error page (pass `error`, `message`, `stack`)
+  res.status(err.statusCode || 500).render("error", {
+    error: err,
+    message: err.message || "Internal Server Error",
     stack: process.env.NODE_ENV === "production" ? null : err.stack
   });
 });
 
-// ===== START SERVER =====
+// ---------- Start server ----------
 const PORT = process.env.PORT || 5000;
-app.listen(PORT,()=>console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
 
 module.exports = app;
