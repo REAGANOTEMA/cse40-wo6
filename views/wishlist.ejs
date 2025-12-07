@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Wishlist</title>
+</head>
+<body>
+    <h1>My Wishlist</h1>
+
+    <% if (errors && errors.length > 0) { %>
+        <div style="color:red;">
+            <% errors.forEach(err => { %>
+                <p><%= err %></p>
+            <% }) %>
+        </div>
+    <% } %>
+
+    <form action="/wishlist/add" method="POST">
+        <label>Email:</label>
+        <input type="email" name="userEmail" required>
+
+        <label>Product Name:</label>
+        <input type="text" name="productName" required>
+
+        <label>Notes:</label>
+        <textarea name="notes"></textarea>
+
+        <button type="submit">Add to Wishlist</button>
+    </form>
+
+    <h2>Wishlist Items</h2>
+    <ul>
+        <% items.forEach(item => { %>
+            <li>
+                <strong><%= item.productName %></strong>
+                by <%= item.userEmail %> (added <%= item.createdAt.toDateString() %>)
+                <br>
+                <em><%= item.notes %></em>
+            </li>
+        <% }) %>
+    </ul>
+</body>
+</html>

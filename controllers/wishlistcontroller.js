@@ -1,46 +1,34 @@
-const Wishlist = require('../models/wishlist');
-const Product = require('../models/product');
-const asyncHandler = require('express-async-handler');
+const Wishlist = require('../models/wishlistmodel');
 
-// GET /api/wishlist/:userId
-exports.getWishlist = asyncHandler(async (req, res) => {
-    const wishlist = await Wishlist.findOne({ user: req.params.userId })
-        .populate('products');
+// Show wishlist page
+exports.getWishlistPage = async (req, res) => {
+    try {
+        const items = await Wishlist.find().sort({ createdAt: -1 });
+        res.render('wishlist', { items, errors: null });
+    } catch (error) {
+        res.status(500).send("Server Error: Unable to load wishlist.");
+    }
+};
 
-    res.render('wishlist/wishlist', { wishlist });
-});
+// Add a new wishlist item
+exports.addWishlistItem = async (req, res) => {
+    const { userEmail, productName, notes } = req.body;
+    const errors = [];
 
-// POST /api/wishlist/add
-exports.addToWishlist = asyncHandler(async (req, res) => {
-    const { userId, productId } = req.body;
-
-    let wishlist = await Wishlist.findOne({ user: userId });
-
-    if (!wishlist) {
-        wishlist = new Wishlist({
-            user: userId,
-            products: [productId]
-        });
-    } else {
-        if (!wishlist.products.includes(productId)) {
-            wishlist.products.push(productId);
-        }
+    if (!userEmail || !productName) {
+        errors.push("Email and Product Name are required.");
     }
 
-    await wishlist.save();
-    res.redirect(`/api/wishlist/${userId}`);
-});
-
-// POST /api/wishlist/remove
-exports.removeFromWishlist = asyncHandler(async (req, res) => {
-    const { userId, productId } = req.body;
-
-    let wishlist = await Wishlist.findOne({ user: userId });
-
-    if (wishlist) {
-        wishlist.products = wishlist.products.filter(id => id.toString() !== productId);
-        await wishlist.save();
+    if (errors.length > 0) {
+        const items = await Wishlist.find().sort({ createdAt: -1 });
+        return res.render('wishlist', { items, errors });
     }
 
-    res.redirect(`/api/wishlist/${userId}`);
-});
+    try {
+        const item = new Wishlist({ userEmail, productName, notes });
+        await item.save();
+        res.redirect('/wishlist');
+    } catch (error) {
+        res.status(500).send("Error saving wishlist item.");
+    }
+};
