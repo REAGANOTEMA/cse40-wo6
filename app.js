@@ -5,23 +5,21 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
 
-// Load environment variables from .env
 dotenv.config();
 
 const app = express();
 
-// ---------- Express / Views ----------
+// ---------- Express View Engine ----------
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-// serve public files (css, images, js)
+// Static Files
 app.use(express.static(path.join(__dirname, "public")));
 
-// parse JSON and urlencoded form bodies
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// CORS (open for Render). Adjust if you want to restrict origins.
+// CORS (required for Render)
 app.use(cors({
   origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
@@ -30,57 +28,39 @@ app.use(cors({
 
 // ---------- Database ----------
 const connectDB = async () => {
-  const mongoUri = process.env.MONGO_URI;
-  if (!mongoUri) {
-    console.error("❌ MONGO_URI missing in environment variables");
-    process.exit(1);
-  }
   try {
-    await mongoose.connect(mongoUri, {
-      serverSelectionTimeoutMS: 10000,
-      socketTimeoutMS: 45000,
-      // useNewUrlParser/useUnifiedTopology not required for modern mongoose versions
+    await mongoose.connect(process.env.MONGO_URI, {
+      serverSelectionTimeoutMS: 15000
     });
     console.log("✅ MongoDB Connected");
   } catch (err) {
-    console.error("❌ MongoDB Connection Error:", err.message);
+    console.error("❌ MongoDB Error:", err.message);
     process.exit(1);
   }
 };
 connectDB();
 
-// ---------- API ROUTES (only the routes you have) ----------
-const orderRoutes = require("./routes/orderroute");
-const productRoutes = require("./routes/productroute");
-const reviewRoutes = require("./routes/reviewroute");
-const userRoutes = require("./routes/userroute");
-const wishlistRoutes = require("./routes/wishlistroute");
+// ---------- API ROUTES ----------
+app.use("/api/orders", require("./routes/orderroute"));
+app.use("/api/products", require("./routes/productroute"));
+app.use("/api/reviews", require("./routes/reviewroute"));
+app.use("/api/users", require("./routes/userroute"));
+app.use("/api/wishlist", require("./routes/wishlistroute"));
 
-app.use("/api/orders", orderRoutes);
-app.use("/api/products", productRoutes);
-app.use("/api/reviews", reviewRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/wishlist", wishlistRoutes);
-
-// ---------- Helper: generic list renderer ----------
-const renderListPage = (Model, title) => async (req, res, next) => {
+// ---------- EJS RENDER HELPERS ----------
+const renderListPage = (Model, title, view) => async (req, res, next) => {
   try {
-    // If model is undefined, throw to be handled by error handler
-    if (!Model) throw new Error("Model not found");
-    const items = await Model.find();
-    res.render("list", { title, items });
-  } catch (err) {
-    next(err);
-  }
+    const data = await Model.find();
+    res.render(view, { title, items: data });
+  } catch (err) { next(err); }
 };
 
-// ---------- PAGE ROUTES (EJS) ----------
-
-// Dashboard: show API status + links (safe defaults)
+// ---------- HOME DASHBOARD ----------
 app.get("/", (req, res) => {
   res.render("index", {
     status: "success",
     message: "API is running correctly on Render",
+
     routes: [
       { method: "POST", path: "/api/orders" },
       { method: "GET", path: "/api/orders/myorders" },
@@ -91,61 +71,96 @@ app.get("/", (req, res) => {
       { method: "POST", path: "/api/users/register" },
       { method: "GET", path: "/api/wishlist" }
     ],
+
     pages: [
-      { name: "Products", path: "/products" },
-      { name: "Reviews", path: "/reviews" },
-      { name: "Wishlist", path: "/wishlist" }
+      { name: "Products", path: "/productlist" },
+      { name: "Wishlist", path: "/wishlist" },
+      { name: "Reviews", path: "/reviewlist" },
+      { name: "Orders", path: "/orders" },
+      { name: "Management", path: "/management" },
+      { name: "Add Classification", path: "/add-classification" },
+      { name: "Add Inventory", path: "/add-inventory" },
+      { name: "Add Vehicle", path: "/add-vehicle" }
     ]
   });
 });
 
-// Products page (uses your Product model file at models/Product.js)
-try {
-  const Product = require("./models/product");
-  app.get("/products", renderListPage(Product, "Products"));
-} catch (e) {
-  // If model file missing, route will report error when visited
-  app.get("/products", (req, res) => res.render("list", { title: "Products", items: [] }));
-}
+// ---------- PAGE ROUTES ----------
 
-// Reviews page
-try {
-  const Review = require("./models/review");
-  app.get("/reviews", renderListPage(Review, "Reviews"));
-} catch (e) {
-  app.get("/reviews", (req, res) => res.render("list", { title: "Reviews", items: [] }));
-}
+// Products
+app.get("/productlist", async (req, res, next) => {
+  try {
+    const Product = require("./models/product");
+    const data = await Product.find();
+    res.render("product", { title: "Product List", products: data });
+  } catch (err) { next(err); }
+});
 
-// Wishlist page
-try {
-  const Wishlist = require("./models/wishlist");
-  app.get("/wishlist", renderListPage(Wishlist, "Wishlist"));
-} catch (e) {
-  app.get("/wishlist", (req, res) => res.render("list", { title: "Wishlist", items: [] }));
-}
+// Wishlist
+app.get("/wishlist", async (req, res, next) => {
+  try {
+    const Wishlist = require("./models/wishlist");
+    const data = await Wishlist.find();
+    res.render("wishlist", { title: "Wishlist", items: data });
+  } catch (err) { next(err); }
+});
 
-// ---------- 404 handler ----------
+// Reviews
+app.get("/reviewlist", async (req, res, next) => {
+  try {
+    const Review = require("./models/review");
+    const data = await Review.find();
+    res.render("reviewlist", { title: "Review List", reviews: data });
+  } catch (err) { next(err); }
+});
+
+// Orders
+app.get("/orders", async (req, res, next) => {
+  try {
+    const Order = require("./models/order");
+    const data = await Order.find();
+    res.render("orders", { title: "Orders", orders: data });
+  } catch (err) { next(err); }
+});
+
+// Management Page
+app.get("/management", (req, res) => {
+  res.render("management", { title: "Management Dashboard" });
+});
+
+// Add Classification
+app.get("/add-classification", (req, res) => {
+  res.render("addclassification", { title: "Add Classification" });
+});
+
+// Add Inventory
+app.get("/add-inventory", (req, res) => {
+  res.render("addinventory", { title: "Add Inventory" });
+});
+
+// Add Vehicle
+app.get("/add-vehicle", (req, res) => {
+  res.render("addvehicle", { title: "Add Vehicle" });
+});
+
+// ---------- ERROR HANDLERS ----------
 app.use((req, res) => {
   res.status(404).render("404", { error: "Page Not Found" });
 });
 
-// ---------- Global error handler (PASS THE ERR OBJECT to template) ----------
 app.use((err, req, res, next) => {
-  // Log full error server-side
   console.error("❌ SERVER ERROR:", err);
-
-  // Respond with rendered error page (pass `error`, `message`, `stack`)
-  res.status(err.statusCode || 500).render("error", {
+  res.status(500).render("error", {
     error: err,
-    message: err.message || "Internal Server Error",
+    message: err.message,
     stack: process.env.NODE_ENV === "production" ? null : err.stack
   });
 });
 
-// ---------- Start server ----------
+// ---------- SERVER ----------
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+app.listen(PORT, () =>
+  console.log(`🚀 Server running on port ${PORT}`)
+);
 
 module.exports = app;

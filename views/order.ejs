@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= title || "Data List" %></title>
+  <title>User Orders</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -24,7 +24,7 @@
       font-weight: bold;
     }
     main {
-      max-width: 900px;
+      max-width: 1000px;
       margin: 2em auto;
       background: white;
       padding: 2em;
@@ -33,16 +33,28 @@
     }
     h1 {
       text-align: center;
-      margin-bottom: 1em;
+      margin-bottom: 2em;
     }
-    .item-box {
+    .order-card {
       padding: 1em;
-      margin-bottom: 1em;
+      margin-bottom: 1.5em;
       border: 1px solid #ddd;
       border-radius: 8px;
       background: #fafafa;
     }
-    .item-box p { margin: 0.3em 0; }
+    .order-card h3 {
+      margin: 0.3em 0;
+      color: #0077cc;
+    }
+    .order-card p {
+      margin: 0.3em 0;
+    }
+    .status {
+      font-weight: bold;
+      color: green;
+    }
+    .status.pending { color: orange; }
+    .status.cancelled { color: red; }
     footer {
       text-align: center;
       padding: 2em 0;
@@ -64,20 +76,28 @@
 </header>
 
 <main>
-  <h1><%= title || "Data List" %></h1>
+  <h1>Your Orders</h1>
 
-  <% if (items && items.length > 0) { %>
-    <% items.forEach(item => { %>
-      <div class="item-box">
-        <% for (let key in item.toObject()) { %>
-          <p><strong><%= key %>:</strong> <%= item[key] %></p>
-        <% } %>
+  <% if (orders && orders.length > 0) { %>
+    <% orders.forEach(order => { %>
+      <div class="order-card">
+        <h3>Order ID: <%= order._id %></h3>
+        <p><strong>User:</strong> <%= order.user %></p>
+        <p><strong>Items:</strong></p>
+        <ul>
+          <% order.items.forEach(item => { %>
+            <li><%= item.name %> - Quantity: <%= item.quantity %> - Price: $<%= item.price %></li>
+          <% }) %>
+        </ul>
+        <p><strong>Total:</strong> $<%= order.totalPrice %></p>
+        <p><strong>Status:</strong> 
+          <span class="status <%= order.status.toLowerCase() %>"><%= order.status %></span>
+        </p>
+        <p><strong>Created At:</strong> <%= new Date(order.createdAt).toLocaleString() %></p>
       </div>
     <% }) %>
   <% } else { %>
-    <p style="text-align:center; font-size:1.1em;">
-      No items available to display.
-    </p>
+    <p style="text-align:center; font-size:1.1em;">No orders available at the moment.</p>
   <% } %>
 
 </main>
