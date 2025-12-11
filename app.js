@@ -80,10 +80,17 @@ app.get("/", (req, res) => {
 // Products
 app.get("/products", renderListPage(Product, "product", "Products", "products"));
 
-// Wishlist
-app.get("/wishlist", renderListPage(Wishlist, "wishlist", "My Wishlist", "items"));
+// Wishlist (fix errors reference)
+app.get("/wishlist", async (req, res, next) => {
+  try {
+    const items = await Wishlist.find();
+    res.render("wishlist", { title: "My Wishlist", items, errors: [] });
+  } catch (err) {
+    next(err);
+  }
+});
 
-// Reviews
+// Reviews (fix view lookup)
 app.get("/reviews", renderListPage(Review, "reviewlist", "Reviews", "reviews"));
 
 // Orders
