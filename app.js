@@ -92,7 +92,7 @@ app.get("/", (req, res) => {
 // ---------- FRONT-END PAGE ROUTES ----------
 
 // Products Page
-app.get("/products", renderListPage(require("./models/product"), "product", "Products", "products"));
+app.get("/products", renderListPage(require("./models/productmodel"), "product", "Products", "products"));
 
 // Wishlist Page
 app.get("/wishlist", renderListPage(require("./models/wishlist"), "wishlist", "Wishlist", "items"));

@@ -1,6 +1,6 @@
 // controllers/ordercontroller.js
 const Order = require('../models/order');
-const Product = require('../models/product');
+const Product = require('../models/productmodel');
 const asyncHandler = require('express-async-handler');
 
 // @desc   Create a new order
