@@ -1,4 +1,3 @@
-// app.js
 const express = require("express");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
@@ -6,67 +5,51 @@ const cors = require("cors");
 const path = require("path");
 
 dotenv.config();
-
 const app = express();
 
-// ================= EXPRESS VIEW ENGINE =================
+// ---------- View Engine ----------
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-// ================= STATIC FILES =================
+// ---------- Static Files ----------
 app.use(express.static(path.join(__dirname, "public")));
 
-// ================= BODY PARSING =================
+// ---------- Body Parsing ----------
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ================= CORS =================
-app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
+// ---------- CORS ----------
+app.use(cors());
 
-// ================= DATABASE CONNECTION =================
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGO_URI, {
-      serverSelectionTimeoutMS: 15000,
-    });
-    console.log("✅ MongoDB Connected");
-  } catch (err) {
+// ---------- Database ----------
+mongoose.connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 15000 })
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch(err => {
     console.error("❌ MongoDB Error:", err.message);
     process.exit(1);
+  });
+
+// ---------- Models ----------
+const Product = require("./models/product");
+const Wishlist = require("./models/wishlist");
+const Review = require("./models/review");
+const Order = require("./models/order");
+
+// ---------- Helper to Render List Pages ----------
+const renderListPage = (Model, view, title, keyName) => async (req, res, next) => {
+  try {
+    const data = await Model.find();
+    res.render(view, { title, [keyName]: data, errors: [] });
+  } catch (err) {
+    next(err);
   }
 };
-connectDB();
 
-// ================= API ROUTES =================
-app.use("/api/orders", require("./routes/orderroute"));
-app.use("/api/products", require("./routes/productroute"));
-app.use("/api/reviews", require("./routes/reviewroute"));
-app.use("/api/users", require("./routes/userroute"));
-app.use("/api/wishlist", require("./routes/wishlistroute"));
-
-// ================= HELPER FOR LIST EJS PAGES =================
-const renderListPage =
-  (Model, ejsFile, title, keyName) => async (req, res, next) => {
-    try {
-      const data = await Model.find();
-      const locals = {};
-      locals.title = title;
-      locals[keyName] = data;
-      res.render(ejsFile, locals);
-    } catch (err) {
-      next(err);
-    }
-  };
-
-// ================= DASHBOARD HOME =================
+// ---------- Dashboard ----------
 app.get("/", (req, res) => {
   res.render("index", {
     status: "success",
-    message: "Front-end + API running successfully on Render ✔",
+    message: "Front-end + API running on Render ✔",
     routes: [
       { method: "POST", path: "/api/orders" },
       { method: "GET", path: "/api/orders/myorders" },
@@ -90,78 +73,22 @@ app.get("/", (req, res) => {
   });
 });
 
-// ================= FRONT-END ROUTES =================
+// ---------- Front-end Pages ----------
+app.get("/products", renderListPage(Product, "product", "Products", "products"));
+app.get("/wishlist", renderListPage(Wishlist, "wishlist", "Wishlist", "items"));
+app.get("/reviews", renderListPage(Review, "reviewlist", "Reviews", "reviews"));
+app.get("/orders", renderListPage(Order, "orders", "Orders", "orders"));
 
-// Products
-app.get(
-  "/products",
-  renderListPage(
-    require("./models/product"),
-    "product",
-    "Products",
-    "products"
-  )
-);
+// ---------- Management Pages ----------
+app.get("/management", (req, res) => res.render("management", { title: "Management Dashboard" }));
+app.get("/add-classification", (req, res) => res.render("addclassification", { title: "Add Classification" }));
+app.get("/add-inventory", (req, res) => res.render("addinventory", { title: "Add Inventory" }));
+app.get("/add-vehicle", (req, res) => res.render("addvehicle", { title: "Add Vehicle" }));
 
-// Wishlist
-app.get(
-  "/wishlist",
-  renderListPage(
-    require("./models/wishlist"),
-    "wishlist",
-    "Wishlist",
-    "items"
-  )
-);
+// ---------- 404 ----------
+app.use((req, res) => res.status(404).render("404", { error: "Page Not Found" }));
 
-// Reviews
-app.get(
-  "/reviews",
-  renderListPage(
-    require("./models/review"),
-    "reviewlist",
-    "Reviews",
-    "reviews"
-  )
-);
-
-// Orders
-app.get(
-  "/orders",
-  renderListPage(
-    require("./models/order"),
-    "orders",
-    "Orders",
-    "orders"
-  )
-);
-
-// Management
-app.get("/management", (req, res) => {
-  res.render("management", { title: "Management Dashboard" });
-});
-
-// Add Classification
-app.get("/add-classification", (req, res) => {
-  res.render("addclassification", { title: "Add Classification" });
-});
-
-// Add Inventory
-app.get("/add-inventory", (req, res) => {
-  res.render("addinventory", { title: "Add Inventory" });
-});
-
-// Add Vehicle
-app.get("/add-vehicle", (req, res) => {
-  res.render("addvehicle", { title: "Add Vehicle" });
-});
-
-// ================= 404 PAGE =================
-app.use((req, res) => {
-  res.status(404).render("404", { error: "Page Not Found" });
-});
-
-// ================= GLOBAL ERROR HANDLER =================
+// ---------- Error Handler ----------
 app.use((err, req, res, next) => {
   console.error("❌ SERVER ERROR:", err);
   res.status(err.statusCode || 500).render("error", {
@@ -171,10 +98,8 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ================= START SERVER =================
-const PORT = process.env.PORT || 10000; // MATCHES RENDER LOGS
-app.listen(PORT, () =>
-  console.log(`🚀 Server running on Render PORT ${PORT}`)
-);
+// ---------- Start Server ----------
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => console.log(`🚀 Server running on Render PORT ${PORT}`));
 
 module.exports = app;
