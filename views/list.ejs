@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title><%= title || "Data List" %></title>
   <style>
     body {
@@ -42,7 +42,9 @@
       border-radius: 8px;
       background: #fafafa;
     }
-    .item-box p { margin: 0.3em 0; }
+    .item-box p {
+      margin: 0.3em 0;
+    }
     footer {
       text-align: center;
       padding: 2em 0;
@@ -53,38 +55,46 @@
   </style>
 </head>
 <body>
+  <header>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/products">Products</a>
+      <a href="/wishlist">Wishlist</a>
+      <a href="/reviews">Reviews</a>
+      <a href="/orders">Orders</a>
+    </nav>
+  </header>
 
-<header>
-  <nav>
-    <a href="/">Home</a>
-    <a href="/products">Products</a>
-    <a href="/wishlist">Wishlist</a>
-    <a href="/reviews">Reviews</a>
-  </nav>
-</header>
+  <main>
+    <h1><%= title || "Data List" %></h1>
 
-<main>
-  <h1><%= title || "Data List" %></h1>
+    <% 
+      // Determine which key holds the data (items, products, reviews, orders)
+      const dataKeys = ["items", "products", "reviews", "orders"];
+      let dataArray = null;
+      for (const key of dataKeys) {
+        if (locals[key]) { dataArray = locals[key]; break; }
+      }
+    %>
 
-  <% if (items && items.length > 0) { %>
-    <% items.forEach(item => { %>
-      <div class="item-box">
-        <% for (let key in item.toObject()) { %>
-          <p><strong><%= key %>:</strong> <%= item[key] %></p>
-        <% } %>
-      </div>
-    <% }) %>
-  <% } else { %>
-    <p style="text-align:center; font-size:1.1em;">
-      No items available to display.
-    </p>
-  <% } %>
+    <% if (dataArray && dataArray.length > 0) { %>
+      <% dataArray.forEach(item => { %>
+        <div class="item-box">
+          <% for (let key in item.toObject()) { %>
+            <p><strong><%= key %>:</strong> <%= item[key] %></p>
+          <% } %>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <p style="text-align:center; font-size:1.1em;">
+        No items available to display.
+      </p>
+    <% } %>
 
-</main>
+  </main>
 
-<footer>
-  <p>&copy; <%= new Date().getFullYear() %> Reagan Otema</p>
-</footer>
-
+  <footer>
+    <p>&copy; <%= new Date().getFullYear() %> Reagan Otema</p>
+  </footer>
 </body>
 </html>
