@@ -1,5 +1,5 @@
 const asyncHandler = require('express-async-handler');
-const User = require('../models/usermodel'); // ✅ make sure this filename exists
+const User = require('../models/user'); // ✅ make sure this filename exists
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
