@@ -1,26 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Reviews</title>
-    <link rel="stylesheet" href="/css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <h1>Reviews</h1>
-    <p>Designer: <%= designer %></p>
+  <header>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/products">Products</a>
+      <a href="/wishlist">Wishlist</a>
+      <a href="/reviews">Reviews</a>
+      <a href="/orders">Orders</a>
+    </nav>
+  </header>
 
-    <% if(reviews.length === 0) { %>
-        <p>No reviews yet.</p>
+  <main>
+    <h1>⭐ <%= title %></h1>
+
+    <% if (reviews && reviews.length > 0) { %>
+      <% reviews.forEach(r => { %>
+        <div class="item-box">
+          <strong>User:</strong> <%= r.user_name || r.user %> <br>
+          <strong>Product:</strong> <%= r.product_name || r.product %> <br>
+          <strong>Rating:</strong> <%= r.rating %>/5 <br>
+          <p><%= r.comment %></p>
+          <% if(r.createdAt){ %>
+            <small>Created at: <%= r.createdAt.toDateString() %></small>
+          <% } %>
+        </div>
+      <% }) %>
     <% } else { %>
-        <ul>
-            <% reviews.forEach(r => { %>
-                <li>
-                    <strong><%= r.user_name %></strong> rated <%= r.rating %>/5<br>
-                    <%= r.comment %><br>
-                    <small><%= r.created_at %></small>
-                </li>
-            <% }) %>
-        </ul>
+      <p>No reviews available.</p>
     <% } %>
+
+    <a href="/" class="back-link">Back to Dashboard</a>
+  </main>
 </body>
 </html>

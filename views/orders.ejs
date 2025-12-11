@@ -20,22 +20,25 @@
   <main>
     <h1>📦 <%= title %></h1>
 
-    <% if (products && products.length > 0) { %>
-      <% products.forEach(p => { %>
+    <% if (orders && orders.length > 0) { %>
+      <% orders.forEach(order => { %>
         <div class="item-box">
-          <h3><%= p.name %></h3>
-          <p><%= p.description %></p>
-          <p><strong>Price:</strong> $<%= p.price %></p>
-          <% if (p.category) { %>
-            <p><strong>Category:</strong> <%= p.category %></p>
-          <% } %>
-          <% if (p.stock != null) { %>
-            <p><strong>Stock:</strong> <%= p.stock %></p>
+          <strong>Order ID:</strong> <%= order._id %><br>
+          <strong>User:</strong> <%= order.user_email || "Anonymous" %><br>
+          <strong>Status:</strong> <%= order.status %><br>
+          <strong>Total:</strong> $<%= order.total || "0.00" %><br>
+          <% if(order.items && order.items.length > 0){ %>
+            <p><strong>Items:</strong></p>
+            <ul>
+              <% order.items.forEach(i => { %>
+                <li><%= i.name || i.productName %> - $<%= i.price %></li>
+              <% }) %>
+            </ul>
           <% } %>
         </div>
       <% }) %>
     <% } else { %>
-      <p>No products found in the database.</p>
+      <p>No orders available.</p>
     <% } %>
 
     <a href="/" class="back-link">Back to Dashboard</a>

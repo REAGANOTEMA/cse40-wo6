@@ -1,42 +1,49 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Wishlist</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <h1>My Wishlist</h1>
+  <header>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/products">Products</a>
+      <a href="/wishlist">Wishlist</a>
+      <a href="/reviews">Reviews</a>
+      <a href="/orders">Orders</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>💖 <%= title %></h1>
 
     <% if (errors && errors.length > 0) { %>
-        <div style="color:red;">
-            <% errors.forEach(err => { %>
-                <p><%= err %></p>
-            <% }) %>
-        </div>
+      <div class="error-box">
+        <% errors.forEach(err => { %>
+          <p><%= err %></p>
+        <% }) %>
+      </div>
     <% } %>
 
-    <form action="/wishlist/add" method="POST">
-        <label>Email:</label>
-        <input type="email" name="userEmail" required>
-
-        <label>Product Name:</label>
-        <input type="text" name="productName" required>
-
-        <label>Notes:</label>
-        <textarea name="notes"></textarea>
-
-        <button type="submit">Add to Wishlist</button>
-    </form>
-
-    <h2>Wishlist Items</h2>
-    <ul>
+    <% if (items && items.length > 0) { %>
+      <ul>
         <% items.forEach(item => { %>
-            <li>
-                <strong><%= item.productName %></strong>
-                by <%= item.userEmail %> (added <%= item.createdAt.toDateString() %>)
-                <br>
-                <em><%= item.notes %></em>
-            </li>
+          <li>
+            <strong><%= item.productName || item.name %></strong> by <%= item.userEmail || "Anonymous" %> 
+            (<%= item.createdAt ? item.createdAt.toDateString() : "" %>)
+            <br>
+            <em><%= item.notes || "" %></em>
+          </li>
         <% }) %>
-    </ul>
+      </ul>
+    <% } else { %>
+      <p>No items in your wishlist.</p>
+    <% } %>
+
+    <a href="/" class="back-link">Back to Dashboard</a>
+  </main>
 </body>
 </html>
