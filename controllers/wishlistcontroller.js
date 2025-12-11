@@ -1,4 +1,4 @@
-const Wishlist = require('../models/wishlistmodel');
+const Wishlist = require('../models/wishlist');
 
 // Show wishlist page
 exports.getWishlistPage = async (req, res) => {

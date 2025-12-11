@@ -1,9 +1,9 @@
-const Product = require('../models/product'); // exact filename match
+const Product = require('../models/product'); // exact filename
 
 exports.list = async (req, res) => {
   try {
     const products = await Product.find();
-    res.render('products/list', { products });
+    res.render('product', { products }); // your actual file
   } catch (err) {
     console.error(err);
     res.status(500).send("Error loading products");
@@ -11,7 +11,7 @@ exports.list = async (req, res) => {
 };
 
 exports.addForm = (req, res) => {
-  res.render('products/add', { error: null });
+  res.render('addinventory', { error: null }); // your file for add form
 };
 
 exports.add = async (req, res) => {
@@ -19,14 +19,14 @@ exports.add = async (req, res) => {
     const { name, price, description, category, stock, imageUrl } = req.body;
 
     if (!name || !price || !description || !category) {
-      return res.render('products/add', { error: "Name, price, description, and category are required." });
+      return res.render('addinventory', { error: "Required fields missing" });
     }
 
     await Product.create({ name, price, description, category, stock, imageUrl });
     res.redirect('/products');
   } catch (err) {
     console.error(err);
-    res.render('products/add', { error: "Error adding product" });
+    res.render('addinventory', { error: "Error adding product" });
   }
 };
 
@@ -34,7 +34,7 @@ exports.editForm = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).send("Product not found");
-    res.render('products/edit', { product, error: null });
+    res.render('addinventory', { product, error: null }); // reuse same template
   } catch (err) {
     console.error(err);
     res.status(500).send("Error loading edit form");
@@ -46,7 +46,7 @@ exports.update = async (req, res) => {
     const { name, price, description, category, stock, imageUrl } = req.body;
 
     if (!name || !price || !description || !category) {
-      return res.render('products/edit', { product: { _id: req.params.id }, error: "All fields are required." });
+      return res.render('addinventory', { product: { _id: req.params.id }, error: "All fields required" });
     }
 
     await Product.findByIdAndUpdate(req.params.id, { name, price, description, category, stock, imageUrl });
@@ -61,7 +61,7 @@ exports.details = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).send("Product not found");
-    res.render('products/details', { product });
+    res.render('product', { product }); // same file again
   } catch (err) {
     console.error(err);
     res.status(500).send("Error loading product details");
