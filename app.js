@@ -5,29 +5,34 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
 
-// Load environment variables
 dotenv.config();
 
 const app = express();
 
-// ---------- Views ----------
+// ---------- Express View Engine ----------
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-// Static Files
+// ---------- Static Files ----------
 app.use(express.static(path.join(__dirname, "public")));
 
-// Parse JSON & URL-encoded
+// ---------- Body Parsing ----------
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// CORS
-app.use(cors({ origin: "*", methods: ["GET","POST","PUT","DELETE","PATCH"], allowedHeaders: ["Content-Type","Authorization"] }));
+// ---------- CORS ----------
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 
 // ---------- Database ----------
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 15000 });
+    await mongoose.connect(process.env.MONGO_URI, {
+      serverSelectionTimeoutMS: 15000
+    });
     console.log("✅ MongoDB Connected");
   } catch (err) {
     console.error("❌ MongoDB Error:", err.message);
@@ -43,9 +48,20 @@ app.use("/api/reviews", require("./routes/reviewroute"));
 app.use("/api/users", require("./routes/userroute"));
 app.use("/api/wishlist", require("./routes/wishlistroute"));
 
-// ---------- PAGE ROUTES ----------
+// ---------- Helper Function to Render List Pages ----------
+const renderListPage = (Model, viewName, title, dataName) => async (req, res, next) => {
+  try {
+    const items = await Model.find();
+    const locals = {};
+    locals.title = title;
+    locals[dataName] = items;
+    res.render(viewName, locals);
+  } catch (err) {
+    next(err);
+  }
+};
 
-// Dashboard
+// ---------- DASHBOARD ----------
 app.get("/", (req, res) => {
   res.render("index", {
     status: "success",
@@ -61,9 +77,9 @@ app.get("/", (req, res) => {
       { method: "GET", path: "/api/wishlist" }
     ],
     pages: [
-      { name: "Products", path: "/productlist" },
+      { name: "Products", path: "/products" },
       { name: "Wishlist", path: "/wishlist" },
-      { name: "Reviews", path: "/reviewlist" },
+      { name: "Reviews", path: "/reviews" },
       { name: "Orders", path: "/orders" },
       { name: "Management", path: "/management" },
       { name: "Add Classification", path: "/add-classification" },
@@ -73,73 +89,51 @@ app.get("/", (req, res) => {
   });
 });
 
-// Products
-app.get("/productlist", async (req, res, next) => {
-  try {
-    const Product = require("./models/product");
-    const products = await Product.find();
-    res.render("product", { title: "Products", products });
-  } catch (err) { next(err); }
-});
+// ---------- FRONT-END PAGE ROUTES ----------
 
-// Wishlist
-app.get("/wishlist", async (req, res, next) => {
-  try {
-    const Wishlist = require("./models/wishlist");
-    const items = await Wishlist.find();
-    res.render("wishlist", { title: "Wishlist", items });
-  } catch (err) { next(err); }
-});
+// Products Page
+app.get("/products", renderListPage(require("./models/product"), "product", "Products", "products"));
 
-// Reviews
-app.get("/reviewlist", async (req, res, next) => {
-  try {
-    const Review = require("./models/review");
-    const reviews = await Review.find();
-    res.render("reviewlist", { title: "Reviews", reviews });
-  } catch (err) { next(err); }
-});
+// Wishlist Page
+app.get("/wishlist", renderListPage(require("./models/wishlist"), "wishlist", "Wishlist", "items"));
 
-// Orders
-app.get("/orders", async (req, res, next) => {
-  try {
-    const Order = require("./models/order");
-    const orders = await Order.find();
-    res.render("orders", { title: "Orders", orders });
-  } catch (err) { next(err); }
-});
+// Reviews Page
+app.get("/reviews", renderListPage(require("./models/review"), "reviewlist", "Reviews", "reviews"));
 
-// Management Dashboard
+// Orders Page
+app.get("/orders", renderListPage(require("./models/order"), "orders", "Orders", "orders"));
+
+// Management Page
 app.get("/management", (req, res) => {
   res.render("management", { title: "Management Dashboard" });
 });
 
-// Add Classification
+// Add Classification Page
 app.get("/add-classification", (req, res) => {
   res.render("addclassification", { title: "Add Classification" });
 });
 
-// Add Inventory
+// Add Inventory Page
 app.get("/add-inventory", (req, res) => {
   res.render("addinventory", { title: "Add Inventory" });
 });
 
-// Add Vehicle
+// Add Vehicle Page
 app.get("/add-vehicle", (req, res) => {
   res.render("addvehicle", { title: "Add Vehicle" });
 });
 
-// ---------- 404 ----------
+// ---------- 404 Handler ----------
 app.use((req, res) => {
   res.status(404).render("404", { error: "Page Not Found" });
 });
 
-// ---------- Global Error ----------
+// ---------- Global Error Handler ----------
 app.use((err, req, res, next) => {
   console.error("❌ SERVER ERROR:", err);
-  res.status(500).render("error", {
+  res.status(err.statusCode || 500).render("error", {
     error: err,
-    message: err.message,
+    message: err.message || "Internal Server Error",
     stack: process.env.NODE_ENV === "production" ? null : err.stack
   });
 });
