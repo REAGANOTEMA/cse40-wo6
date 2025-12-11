@@ -1,4 +1,4 @@
-const Product = require('../models/productmodel'); // exact filename match
+const Product = require('../models/product'); // exact filename match
 
 exports.list = async (req, res) => {
   try {
